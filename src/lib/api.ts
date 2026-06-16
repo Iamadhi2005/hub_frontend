@@ -13,8 +13,8 @@ const api = axios.create({
 
 // Request interceptor — attach access token
 api.interceptors.request.use((config) => {
-  // Get token from Zustand store, not localStorage
-  const token = useAuthStore.getState().accessToken;
+  const token = useAuthStore.getState().accessToken ||
+    (typeof window !== "undefined" ? localStorage.getItem("access_token") : null);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -44,7 +44,7 @@ const QUEUE_META: Record<
   },
   "rag.bulk_ingest": {
     icon: "🧠",
-    color: "purple",
+    color: "blue",
     desc: "PDF/DOCX → extract → chunk → embed → ChromaDB",
   },
   "notify.bulk_email": {
@@ -81,7 +81,6 @@ const QUEUE_META: Record<
 
 const COLOR_MAP: Record<string, string> = {
   blue:   "bg-blue-50 border-blue-200 text-blue-800",
-  purple: "bg-purple-50 border-purple-200 text-purple-800",
   green:  "bg-green-50 border-green-200 text-green-800",
   yellow: "bg-yellow-50 border-yellow-200 text-yellow-800",
   orange: "bg-orange-50 border-orange-200 text-orange-800",
@@ -92,7 +91,6 @@ const COLOR_MAP: Record<string, string> = {
 
 const PROGRESS_COLOR: Record<string, string> = {
   blue:   "bg-blue-500",
-  purple: "bg-purple-500",
   green:  "bg-green-500",
   yellow: "bg-yellow-500",
   orange: "bg-orange-500",
@@ -267,7 +265,7 @@ function FlowDiagram() {
         <div className="flex flex-col gap-1.5">
           {[
             { q: "file.uploads", c: "blue" },
-            { q: "rag.bulk_ingest", c: "purple" },
+            { q: "rag.bulk_ingest", c: "blue" },
             { q: "notify.bulk_email", c: "green" },
             { q: "notify.bulk_sms", c: "yellow" },
             { q: "analytics.events", c: "orange" },
