@@ -104,7 +104,7 @@ export default function CSVUploadPage() {
   const invalidCount = users.filter((u) => !u.valid).length;
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
@@ -114,7 +114,7 @@ export default function CSVUploadPage() {
         </div>
 
         {/* Template download hint */}
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5 flex items-start gap-3">
+        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-100 dark:border-blue-900 rounded-xl p-4 mb-5 flex items-start gap-3">
           <span className="text-blue-500 text-lg mt-0.5">ℹ️</span>
           <div>
             <p className="text-sm font-medium text-blue-700">CSV format required</p>
@@ -148,8 +148,8 @@ export default function CSVUploadPage() {
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${
               dragOver
-                ? "border-blue-400 bg-blue-50"
-                : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                ? "border-blue-400 bg-blue-50 dark:bg-blue-950"
+                : "border-gray-200 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800"
             }`}
           >
             <input
@@ -171,7 +171,7 @@ export default function CSVUploadPage() {
         {(status === "ready" || status === "uploading" || status === "done") && (
           <div>
             {/* Summary bar */}
-            <div className="flex items-center justify-between bg-white border border-gray-100 rounded-xl px-5 py-3 shadow-sm mb-4">
+            <div className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl px-5 py-3 shadow-sm mb-4">
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">
                   📄 <strong>{fileName}</strong>
@@ -191,7 +191,7 @@ export default function CSVUploadPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-4">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">

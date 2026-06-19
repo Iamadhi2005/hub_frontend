@@ -50,7 +50,7 @@ export default function TaskCard({
 
   return (
     <div
-      className={`bg-white rounded-xl border shadow-sm p-4 flex flex-col gap-3 transition-opacity ${
+      className={`bg-white dark:bg-gray-900 dark:border-gray-700 rounded-xl border shadow-sm p-4 flex flex-col gap-3 transition-opacity ${
         task.status === "done" ? "opacity-60" : ""
       }`}
     >

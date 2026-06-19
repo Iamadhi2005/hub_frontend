@@ -46,7 +46,7 @@ export default function TaskFilters({
   onChange,
 }: TaskFiltersProps) {
   return (
-    <div className="rounded-xl border border-cixio-light bg-white p-4 shadow-sm space-y-3">
+    <div className="rounded-xl border border-cixio-light bg-white dark:bg-gray-900 dark:border-gray-700 p-4 shadow-sm space-y-3">
 
       {/* Search Input */}
       <div className="relative">

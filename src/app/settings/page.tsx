@@ -1,16 +1,22 @@
 "use client";
 // app/settings/page.tsx
 // Settings page at /settings
-// Preferences, integrations, and logout
+// Profile, preferences, integrations, and logout
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useAuthStore } from "@/store/authStore";
+import AvatarUpload from "@/components/settings/AvatarUpload";
+import ThemeToggle from "@/components/settings/ThemeToggle";
 
-type Tab = "preferences" | "account";
+type Tab = "profile" | "preferences" | "account";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>("preferences");
+  const { theme, setTheme } = useTheme();
+  const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [saved, setSaved] = useState(false);
 
   // ── Preferences state ─────────────────────────────────────
@@ -28,32 +34,33 @@ export default function SettingsPage() {
   }
 
   function handleLogout() {
-    if (!confirm("Log out of SmartHub?")) return;
+    if (!confirm("Log out of CixioHub?")) return;
     // TODO: clear auth token/cookie then redirect
     // await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
   }
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
+    { id: "profile",     label: "Profile",     icon: "👤" },
     { id: "preferences", label: "Preferences", icon: "⚙️" },
-    { id: "account",     label: "Account",     icon: "👤" },
+    { id: "account",     label: "Account",     icon: "🔐" },
   ];
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">Settings</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Manage your preferences</p>
+          <p className="text-sm text-gray-400 mt-0.5">Manage your account and preferences</p>
         </div>
 
         <div className="flex gap-6">
 
           {/* Sidebar */}
           <aside className="w-48 shrink-0">
-            <nav className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <nav className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -85,10 +92,72 @@ export default function SettingsPage() {
           {/* Main panel */}
           <div className="flex-1">
 
+            {/* ── PROFILE ── */}
+            {activeTab === "profile" && (
+              <div className="space-y-5">
+                {/* Profile Picture */}
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+                  <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Profile picture</h2>
+                  <AvatarUpload
+                    currentPhotoUrl={user?.avatar_url}
+                    userInitials={(user?.full_name || "?").split(" ").map(n => n[0]).join("").toUpperCase()}
+                  />
+                </div>
+
+                {/* Account Information */}
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+                  <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">Account information</h2>
+                  
+                  <div className="space-y-4">
+                    {/* Full Name */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Full name</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={user?.full_name || ""}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600 cursor-not-allowed"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Contact support to change your name</p>
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                      <input
+                        type="email"
+                        disabled
+                        value={user?.email || ""}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600 cursor-not-allowed"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                    </div>
+
+                    {/* Role */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Role</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={user?.is_admin ? "Administrator" : "User"}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600 cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ── PREFERENCES ── */}
             {activeTab === "preferences" && (
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
-                <h2 className="text-base font-semibold text-gray-800">Preferences</h2>
+<div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 space-y-5">
+                <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">Preferences</h2>
+
+                {/* Theme */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Theme</label>
+                  <ThemeToggle />
+                </div>
 
                 {/* Language */}
                 <div>
@@ -208,6 +277,15 @@ export default function SettingsPage() {
                   </button>
                 </div>
 
+                {/* Security */}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                  <h2 className="text-base font-semibold text-gray-800 mb-1">Security</h2>
+                  <p className="text-xs text-gray-400 mb-4">Manage your password and security settings.</p>
+                  <button className="text-sm border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-600">
+                    🔒 Change password
+                  </button>
+                </div>
+
                 {/* Logout */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                   <h2 className="text-base font-semibold text-gray-800 mb-1">Log out</h2>
@@ -216,7 +294,7 @@ export default function SettingsPage() {
                     onClick={handleLogout}
                     className="text-sm bg-red-50 border border-red-200 text-red-500 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors"
                   >
-                    🚪 Log out of SmartHub
+                    🚪 Log out of CixioHub
                   </button>
                 </div>
               </div>

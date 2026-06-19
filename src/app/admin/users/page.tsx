@@ -67,7 +67,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
@@ -89,7 +89,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Filter tabs + search */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-5 flex flex-wrap items-center gap-3">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 mb-5 flex flex-wrap items-center gap-3">
           {/* Status filter tabs */}
           <div className="flex gap-1">
             {(["all", "pending", "approved", "rejected"] as const).map((f) => (
@@ -121,7 +121,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Users table */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">

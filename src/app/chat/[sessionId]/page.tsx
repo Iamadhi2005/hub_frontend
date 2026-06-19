@@ -119,12 +119,12 @@ export default function AIChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-cixio-bg text-cixio-dark">
+    <div className="flex h-screen bg-cixio-bg dark:bg-gray-950 text-cixio-dark dark:text-gray-100">
       <div className="flex flex-col flex-1 h-full max-w-4xl mx-auto p-4 justify-between">
         {/* Messages Header */}
-        <div className="py-2 border-b border-cixio-light mb-4">
-          <h1 className="text-xl font-semibold text-cixio-dark">Cixio Engine Chat</h1>
-          <p className="text-xs text-cixio-muted">Local execution context layer</p>
+        <div className="py-2 border-b border-cixio-light dark:border-gray-700 mb-4">
+          <h1 className="text-xl font-semibold text-cixio-dark dark:text-gray-100">Cixio Engine Chat</h1>
+          <p className="text-xs text-cixio-muted dark:text-gray-400">Local execution context layer</p>
         </div>
 
         {/* Message View Area */}
@@ -159,7 +159,7 @@ export default function AIChatPage() {
         </div>
 
         {/* Action Panel / Input Box Form */}
-        <form onSubmit={handleSend} className="mt-4 p-3 bg-white rounded-xl border border-cixio-light shadow-sm space-y-2">
+        <form onSubmit={handleSend} className="mt-4 p-3 bg-white dark:bg-gray-900 rounded-xl border border-cixio-light dark:border-gray-700 shadow-sm space-y-2">
           {/* File Attachment Chips Queue */}
           {attachedFiles.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -198,7 +198,7 @@ export default function AIChatPage() {
               onChange={(e) => setInput(e.target.value)}
               placeholder={isStreaming ? "Awaiting stream block closure..." : "Ask anything..."}
               disabled={isStreaming}
-              className="flex-1 bg-transparent px-2 py-1 text-sm outline-none placeholder:text-cixio-muted"
+              className="flex-1 bg-transparent px-2 py-1 text-sm outline-none placeholder:text-cixio-muted dark:placeholder:text-gray-400"
             />
 
             <button

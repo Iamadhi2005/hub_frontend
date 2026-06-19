@@ -483,11 +483,11 @@ export default function QueuesPage() {
   const emptyQueues = allQueues.filter((q) => !stats[q]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 md:p-6">
       {/* header */}
       <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             ⚡ Queue Dashboard
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -531,7 +531,7 @@ export default function QueuesPage() {
               key={jt.type}
               onClick={() => submitJob(jt)}
               disabled={submitting === jt.type}
-              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-white border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all text-left disabled:opacity-60 disabled:cursor-not-allowed group"
+              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-md transition-all text-left disabled:opacity-60 disabled:cursor-not-allowed group"
             >
               <span className="text-2xl group-hover:scale-110 transition-transform">
                 {jt.icon}
@@ -571,7 +571,7 @@ export default function QueuesPage() {
               return (
                 <div
                   key={q}
-                  className="rounded-lg border border-dashed border-gray-200 bg-white p-2 text-center opacity-50"
+                  className="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2 text-center opacity-50"
                 >
                   <div className="text-lg">{meta.icon}</div>
                   <div className="text-xs text-gray-500 truncate">{q}</div>
@@ -586,9 +586,9 @@ export default function QueuesPage() {
       {/* two-column: live jobs + event log */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* live jobs table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-semibold text-sm text-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <h2 className="font-semibold text-sm text-gray-800 dark:text-gray-100">
               🔄 Live Jobs
             </h2>
             <span className="text-xs text-gray-400">{jobs.length} total</span>
@@ -600,7 +600,7 @@ export default function QueuesPage() {
               </div>
             ) : (
               <table className="w-full text-xs">
-                <thead className="bg-gray-50 text-gray-500 uppercase tracking-wide">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                   <tr>
                     <th className="px-3 py-2 text-left">Job</th>
                     <th className="px-3 py-2 text-left">Queue</th>
@@ -616,12 +616,12 @@ export default function QueuesPage() {
                       desc: "",
                     };
                     return (
-                      <tr key={j.job_id} className="hover:bg-gray-50">
+                      <tr key={j.job_id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-3 py-2">
-                          <div className="font-medium text-gray-700">
+                          <div className="font-medium text-gray-700 dark:text-gray-100">
                             {meta.icon} {j.label}
                           </div>
-                          <div className="text-gray-400 truncate max-w-[160px]">
+                          <div className="text-gray-400 dark:text-gray-400 truncate max-w-[160px]">
                             {j.message}
                           </div>
                         </td>

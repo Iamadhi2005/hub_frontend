@@ -45,13 +45,10 @@ export default function NavBar() {
       {/* ── Left: logo + nav links ── */}
       <div className="flex items-center gap-6">
         <Link href="/dashboard" className="flex items-center gap-2.5 flex-shrink-0">
-          <Image
+          <img
             src="/cixio-logo-white.png"
             alt="Cixio"
-            width={120}
-            height={32}
-            className="h-8 w-auto object-contain"
-            priority
+            className="h-8 object-contain"
           />
         </Link>
 

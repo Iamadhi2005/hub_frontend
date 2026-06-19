@@ -1,10 +1,11 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+const baseURL = API_URL ? `${API_URL}/api/v1` : "/api/v1";
 
 const api = axios.create({
-  baseURL: `${API_URL}/api/v1`,
+  baseURL,
   headers: { "Content-Type": "application/json" },
   // Axios follows redirects but re-sends GET for 307 POST redirects by default.
   // maxRedirects: 0 so we handle trailing-slash 307s at the call site by always

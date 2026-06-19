@@ -73,7 +73,7 @@ export default function ManageAccountsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -92,7 +92,7 @@ export default function ManageAccountsPage() {
             { label: "Suspended",      value: counts.suspended, color: "text-yellow-600" },
             { label: "Inactive",       value: counts.inactive,  color: "text-gray-500"   },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+            <div key={s.label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
               <p className="text-xs text-gray-400 mb-1">{s.label}</p>
               <p className={`text-2xl font-semibold ${s.color}`}>{s.value}</p>
             </div>
@@ -104,7 +104,7 @@ export default function ManageAccountsPage() {
           {/* ── Left: table ── */}
           <div className="flex-1">
             {/* Filter + search bar */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4 flex flex-wrap items-center gap-3">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 mb-4 flex flex-wrap items-center gap-3">
               <div className="flex gap-1">
                 {(["all","active","suspended","inactive"] as const).map((f) => (
                   <button
@@ -133,7 +133,7 @@ export default function ManageAccountsPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
@@ -238,7 +238,7 @@ export default function ManageAccountsPage() {
                     { label: "Notes",   value: selected.notes   },
                     { label: "Storage", value: selected.storage },
                   ].map((s) => (
-                    <div key={s.label} className="bg-gray-50 rounded-lg p-2 text-center">
+                    <div key={s.label} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 text-center">
                       <p className="text-xs font-semibold text-gray-700">{s.value}</p>
                       <p className="text-xs text-gray-400">{s.label}</p>
                     </div>

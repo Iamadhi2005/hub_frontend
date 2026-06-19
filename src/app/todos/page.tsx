@@ -1,23 +1,12 @@
 "use client";
-// app/todos/page.tsx
-// The full Tasks page — lives at /todos.
-// "use client" because everything here is interactive (state, modals, filters).
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import TaskCard from "@/components/todos/TaskCard";
 import TaskModal from "@/components/todos/TaskModal";
-import TaskFilters, { Filters, applyFilters } from "@/components/todos/TaskFilters";
-import { Task, TaskFormData } from "@/components/todos/types";
-import {
-  loadTasks,
-  saveTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-  toggleSubtask,
-} from "@/components/todos/taskStore";
+import TaskFilters, { Filters, applyFilters } from "@/components/todos/taskfilters";
+import { useTasks } from "@/store/tasksContext";
+import { TaskFormData, Task } from "@/components/todos/types";
 
-// Default filter state
 const DEFAULT_FILTERS: Filters = {
   search: "",
   status: "all",
@@ -26,52 +15,21 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 export default function TodosPage() {
-  // ── State ──────────────────────────────────────────────────
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const { tasks, createTask, updateTask, deleteTask, toggleSubtask } = useTasks();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // ── Load tasks from localStorage on first render ───────────
-  useEffect(() => {
-    setTasks(loadTasks());
-  }, []);
+  const visibleTasks = applyFilters(tasks, filters);
 
-  // ── Persist any time tasks change ─────────────────────────
-  useEffect(() => {
-    if (tasks.length > 0) saveTasks(tasks);
-  }, [tasks]);
-
-  // ── CRUD handlers ──────────────────────────────────────────
-
-  function handleSave(data: TaskFormData) {
-    if (editingTask) {
-      // Update existing task
-      setTasks((prev) => updateTask(prev, editingTask.id, data));
-    } else {
-      // Create new task
-      setTasks((prev) => createTask(prev, data));
-    }
-    closeModal();
-  }
-
-  function handleDelete(id: string) {
-    if (!confirm("Delete this task?")) return;
-    setTasks((prev) => deleteTask(prev, id));
-  }
-
-  function handleEdit(task: Task) {
-    setEditingTask(task);
-    setModalOpen(true);
-  }
-
-  function handleStatusChange(id: string, status: Task["status"]) {
-    setTasks((prev) => updateTask(prev, id, { status }));
-  }
-
-  function handleToggleSubtask(taskId: string, subtaskId: string) {
-    setTasks((prev) => toggleSubtask(prev, taskId, subtaskId));
-  }
+  const total = tasks.length;
+  const done = tasks.filter((t) => t.status === "done").length;
+  const inProgress = tasks.filter((t) => t.status === "in_progress").length;
+  const overdue = tasks.filter(
+    (t) =>
+      t.status !== "done" &&
+      new Date(t.dueDate) < new Date(new Date().toDateString())
+  ).length;
 
   function openNewModal() {
     setEditingTask(null);
@@ -83,20 +41,33 @@ export default function TodosPage() {
     setEditingTask(null);
   }
 
-  // ── Filtered + sorted tasks ────────────────────────────────
-  const visibleTasks = applyFilters(tasks, filters);
+  function handleSave(data: TaskFormData) {
+    if (editingTask) {
+      updateTask(editingTask.id, data);
+    } else {
+      createTask(data);
+    }
+    closeModal();
+  }
 
-  // ── Stats for the header ───────────────────────────────────
-  const total = tasks.length;
-  const done = tasks.filter((t) => t.status === "done").length;
-  const inProgress = tasks.filter((t) => t.status === "in_progress").length;
-  const overdue = tasks.filter(
-    (t) =>
-      t.status !== "done" &&
-      new Date(t.dueDate) < new Date(new Date().toDateString())
-  ).length;
+  function handleDelete(id: string) {
+    if (!confirm("Delete this task?")) return;
+    deleteTask(id);
+  }
 
-  // ── Group visible tasks by status for column layout ────────
+  function handleEdit(task: Task) {
+    setEditingTask(task);
+    setModalOpen(true);
+  }
+
+  function handleStatusChange(id: string, status: Task["status"]) {
+    updateTask(id, { status });
+  }
+
+  function handleToggleSubtask(taskId: string, subtaskId: string) {
+    toggleSubtask(taskId, subtaskId);
+  }
+
   const grouped = {
     todo: visibleTasks.filter((t) => t.status === "todo"),
     in_progress: visibleTasks.filter((t) => t.status === "in_progress"),
@@ -104,10 +75,8 @@ export default function TodosPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-6xl mx-auto">
-
-        {/* ── Page header ──────────────────────────────────── */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">Tasks</h1>
@@ -119,7 +88,6 @@ export default function TodosPage() {
             </p>
           </div>
 
-          {/* New task button */}
           <button
             onClick={openNewModal}
             className="bg-cixio-blue text-white text-sm px-4 py-2 rounded-lg hover:bg-cixio-hover transition-colors flex items-center gap-2"
@@ -129,7 +97,6 @@ export default function TodosPage() {
           </button>
         </div>
 
-        {/* ── Progress bar (overall completion) ────────────── */}
         {total > 0 && (
           <div className="mb-5">
             <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -144,7 +111,6 @@ export default function TodosPage() {
           </div>
         )}
 
-        {/* ── Filter bar ───────────────────────────────────── */}
         <div className="mb-5">
           <TaskFilters
             filters={filters}
@@ -153,10 +119,7 @@ export default function TodosPage() {
           />
         </div>
 
-        {/* ── Three-column Kanban layout ────────────────────── */}
         <div className="grid grid-cols-3 gap-4">
-
-          {/* TO DO column */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <h2 className="text-sm font-semibold text-gray-600">To do</h2>
@@ -183,7 +146,6 @@ export default function TodosPage() {
             </div>
           </div>
 
-          {/* IN PROGRESS column */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <h2 className="text-sm font-semibold text-blue-600">In progress</h2>
@@ -210,7 +172,6 @@ export default function TodosPage() {
             </div>
           </div>
 
-          {/* DONE column */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <h2 className="text-sm font-semibold text-green-600">Done</h2>
@@ -236,10 +197,8 @@ export default function TodosPage() {
               )}
             </div>
           </div>
-
         </div>
 
-        {/* ── Empty state (no tasks at all) ─────────────────── */}
         {total === 0 && (
           <div className="text-center py-20">
             <p className="text-4xl mb-3">✅</p>
@@ -256,16 +215,14 @@ export default function TodosPage() {
           </div>
         )}
 
+        {modalOpen && (
+          <TaskModal
+            task={editingTask}
+            onSave={handleSave}
+            onClose={closeModal}
+          />
+        )}
       </div>
-
-      {/* ── Modal (create / edit) ─────────────────────────────── */}
-      {modalOpen && (
-        <TaskModal
-          task={editingTask}
-          onSave={handleSave}
-          onClose={closeModal}
-        />
-      )}
     </main>
   );
 }
