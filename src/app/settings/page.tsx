@@ -15,7 +15,7 @@ type Tab = "profile" | "preferences" | "account";
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { user } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [saved, setSaved] = useState(false);
 
@@ -31,7 +31,8 @@ export default function SettingsPage() {
 
   function handleLogout() {
     if (!confirm("Log out of CixioHub?")) return;
-    // TODO: clear auth token/cookie then redirect
+    // Clear auth tokens and redirect to login
+    clearAuth();
     // await fetch("/api/auth/logout", { method: "POST" });
     router.push("/auth/login");
   }

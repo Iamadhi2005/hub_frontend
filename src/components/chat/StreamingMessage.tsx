@@ -41,6 +41,7 @@ export default function StreamingMessage({ sessionId, content, useRag, thinkingM
     const body = JSON.stringify({ content, use_rag: useRag, thinking_mode: thinkingMode });
 
     async function doFetch(url: string) {
+      const signal = controllerRef.current?.signal;
       return fetch(url, {
         method: "POST",
         headers: {
@@ -48,26 +49,26 @@ export default function StreamingMessage({ sessionId, content, useRag, thinkingM
           ...(url !== localUrl && token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body,
-        signal: controllerRef.current.signal,
+        signal,
       });
     }
 
-    let res = null;
+    let res: Response | null = null;
 
     try {
       res = await doFetch(remoteUrl);
       if (!res.ok) {
         throw new Error("Remote chat endpoint unavailable");
       }
-    } catch (err) {
+    } catch (error) {
       try {
         res = await doFetch(localUrl);
         if (!res.ok) {
           console.error("Local chat fallback failed", res.statusText);
           return;
         }
-      } catch (fallbackErr) {
-        console.error("Chat streaming failed", fallbackErr);
+      } catch (fallbackError) {
+        console.error("Chat streaming failed", fallbackError);
         return;
       }
     }
@@ -111,9 +112,9 @@ export default function StreamingMessage({ sessionId, content, useRag, thinkingM
           }
         }
       }
-    } catch (err) {
-      if (err instanceof Error && err.name !== "AbortError") {
-        console.error("Stream error:", err);
+    } catch (error) {
+      if (error instanceof Error && error.name !== "AbortError") {
+        console.error("Stream error:", error);
       }
     } finally {
       if (isMountedRef.current) onDone();

@@ -21,7 +21,8 @@ const ADMIN_LINKS = [
   { href: "/admin/accounts",   label: "Accounts" },
 ];
 
-const AUTH_PATHS = ["/login", "/register"];
+// Paths where the navbar should be hidden (auth pages)
+const AUTH_PATHS = ["/auth/login", "/auth/register", "/login", "/register"];
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -33,7 +34,7 @@ export default function NavBar() {
 
   const handleLogout = () => {
     clearAuth();
-    router.push("/login");
+    router.push("/auth/login");
   };
 
   // Check if user is admin — adjust this to match your actual auth store shape
