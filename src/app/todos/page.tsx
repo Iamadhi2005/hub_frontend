@@ -11,7 +11,6 @@ const DEFAULT_FILTERS: Filters = {
   search: "",
   status: "all",
   priority: "all",
-  sort: "dueDate",
 };
 
 export default function TodosPage() {

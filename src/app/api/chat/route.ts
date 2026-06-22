@@ -3,9 +3,10 @@ import { NextRequest } from 'next/server';
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
-  const { prompt, model } = await req.json();
+  const { prompt, content, use_rag, thinking_mode } = await req.json();
+  const userPrompt = prompt ?? content ?? "Hello";
 
-  const mockReply = `Here's what I know about "${prompt}": SmartHub uses SSE streaming so the AI response appears token by token, just like this. When your FastAPI backend is connected, this text will come from a real LLM like Ollama or GPT-4.`;
+  const mockReply = `Here's what I know about "${userPrompt}": SmartHub uses SSE streaming so the AI response appears token by token, just like this. When your FastAPI backend is connected, this text will come from a real LLM like Ollama or GPT-4.`;
 
   const stream = new ReadableStream({
     async start(controller) {

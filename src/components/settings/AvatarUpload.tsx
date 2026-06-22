@@ -3,8 +3,8 @@
 import { useState, useRef } from "react";
 
 type Props = {
-  currentPhotoUrl?: string;   // existing photo from the database, if any
-  userInitials: string;       // fallback like "AX"
+  currentPhotoUrl?: string | null;   // existing photo from the database, if any
+  userInitials: string;             // fallback like "AX"
 };
 
 export default function AvatarUpload({ currentPhotoUrl, userInitials }: Props) {

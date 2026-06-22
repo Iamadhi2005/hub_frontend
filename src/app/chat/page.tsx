@@ -1,16 +1,36 @@
-import { redirect } from "next/navigation";
+"use client";
 
-type SearchParams = Record<string, string | string[] | undefined>;
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSessions, useCreateSession } from "@/hooks/useChat";
 
-function buildQuery(params: SearchParams) {
-  const paramsArr = Object.entries(params).flatMap(([key, value]) => {
-    if (value === undefined) return [];
-    if (Array.isArray(value)) return value.map((item) => `${encodeURIComponent(key)}=${encodeURIComponent(item)}`);
-    return [`${encodeURIComponent(key)}=${encodeURIComponent(value)}`];
-  });
-  return paramsArr.length ? `?${paramsArr.join("&")}` : "";
-}
+export default function ChatPage() {
+  const router = useRouter();
+  const { data: sessions, isLoading } = useSessions();
+  const { mutate: createSession, isPending } = useCreateSession();
 
-export default function ChatPage({ searchParams }: { searchParams: SearchParams }) {
-  redirect(`/chat/default${buildQuery(searchParams)}`);
+  useEffect(() => {
+    if (!isLoading && !isPending) {
+      // If there are existing sessions, redirect to the first one
+      if (sessions && sessions.length > 0) {
+        router.push("/chat/default");
+      } else {
+        // Otherwise create a new session
+        createSession(undefined, {
+          onSuccess: () => {
+            router.push("/chat/default");
+          },
+        });
+      }
+    }
+  }, [sessions, isLoading, isPending, createSession, router]);
+
+  return (
+    <div className="flex items-center justify-center h-full">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cixio-blue mb-4"></div>
+        <p className="text-gray-500 dark:text-gray-400">Loading chat...</p>
+      </div>
+    </div>
+  );
 }

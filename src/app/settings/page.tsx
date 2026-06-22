@@ -20,11 +20,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
 
   // ── Preferences state ─────────────────────────────────────
-  const [language,      setLanguage]      = useState("en");
   const [dateFormat,    setDateFormat]    = useState("MM/DD/YYYY");
-  const [timeFormat,    setTimeFormat]    = useState("12h");
-  const [startOfWeek,   setStartOfWeek]   = useState("monday");
-  const [aiModel,       setAiModel]       = useState("ollama");
   const [autoSave,      setAutoSave]      = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -37,7 +33,7 @@ export default function SettingsPage() {
     if (!confirm("Log out of CixioHub?")) return;
     // TODO: clear auth token/cookie then redirect
     // await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.push("/auth/login");
   }
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
@@ -159,78 +155,16 @@ export default function SettingsPage() {
                   <ThemeToggle />
                 </div>
 
-                {/* Language */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Language</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Date format</label>
                   <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
+                    value={dateFormat}
+                    onChange={(e) => setDateFormat(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="ur">Urdu</option>
-                    <option value="ar">Arabic</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Date format */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Date format</label>
-                    <select
-                      value={dateFormat}
-                      onChange={(e) => setDateFormat(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                    </select>
-                  </div>
-
-                  {/* Time format */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Time format</label>
-                    <select
-                      value={timeFormat}
-                      onChange={(e) => setTimeFormat(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                      <option value="12h">12-hour (2:30 PM)</option>
-                      <option value="24h">24-hour (14:30)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Start of week */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Week starts on</label>
-                  <select
-                    value={startOfWeek}
-                    onChange={(e) => setStartOfWeek(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="monday">Monday</option>
-                    <option value="sunday">Sunday</option>
-                    <option value="saturday">Saturday</option>
-                  </select>
-                </div>
-
-                {/* AI model */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Default AI model</label>
-                  <select
-                    value={aiModel}
-                    onChange={(e) => setAiModel(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="ollama">Ollama (local)</option>
-                    <option value="gpt4">GPT-4o</option>
-                    <option value="claude">Claude 3.5</option>
-                    <option value="gemini">Gemini Pro</option>
+                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                   </select>
                 </div>
 

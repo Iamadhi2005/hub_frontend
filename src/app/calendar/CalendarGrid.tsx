@@ -1,113 +1,111 @@
 "use client";
 
-import React, { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { CalendarEvent, TodoDueItem } from "@/types/calendar";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTasks } from "@/store/tasksContext";
+import { groupTodosByDate, formatDateKey } from "@/lib/calendarUtils";
+import { PRIORITY_COLORS } from "@/lib/priorityColors";
+import { Task } from "@/components/todos/types";
 
-interface CalendarGridProps {
-  initialEvents?: CalendarEvent[];
-  initialTodos?: TodoDueItem[];
-}
+export default function CalendarGrid() {
+  const { tasks } = useTasks();
+  const router = useRouter();
+  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 5, 1)); // June 2026
 
-export default function CalendarGrid({ initialEvents = [], initialTodos = [] }: CalendarGridProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // This is the ENTIRE "sync" mechanism — group whatever tasks exist by due date.
+  // No copying, no separate calendar_events table needed for this feature.
+  const todosByDate = groupTodosByDate(tasks);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  function goToTodo(task: Task) {
+    // Per the requirement: clicking takes you to /todos
+    router.push("/todos");
+  }
 
-  // 1. Get calculations for month dates matrix
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  // Build the grid of day cells for the current month
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
 
-  // Generate date array representation blocks
-  const blanks = Array(firstDayOfMonth).fill(null);
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const calendarCells = [...blanks, ...days];
+  const cells: { day: number; dateKey: string }[] = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({ day: d, dateKey: formatDateKey(year, month, d) });
+  }
 
-  // Month navigation handlers
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
-  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const todayKey = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="w-full bg-white rounded-xl border border-cixio-light p-4 shadow-sm">
-      {/* Calendar Grid Header Controls */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-bold text-cixio-dark">
-          {monthNames[month]} <span className="text-cixio-muted font-normal">{year}</span>
-        </h2>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={prevMonth}
-            className="p-1.5 rounded-lg border border-cixio-light hover:bg-cixio-bg text-cixio-dark transition-colors"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={nextMonth}
-            className="p-1.5 rounded-lg border border-cixio-light hover:bg-cixio-bg text-cixio-dark transition-colors"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
+    <main className="p-6 max-w-5xl mx-auto">
+      <div className="mb-4">
+        <h1 className="text-lg font-medium">Calendar</h1>
+        <p className="text-sm text-gray-500">Due dates are pulled live from your Todos</p>
       </div>
 
-      {/* Week Day Header Labels */}
-      <div className="grid grid-cols-7 gap-1 text-center mb-1">
-        {dayLabels.map((label) => (
-          <div key={label} className="text-[11px] font-semibold text-cixio-muted uppercase tracking-wider py-1">
-            {label}
-          </div>
+      <div className="flex items-center gap-3 mb-3">
+        <button
+          onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
+          className="w-8 h-8 border rounded-md dark:border-gray-700"
+        >‹</button>
+        <span className="font-medium">{currentMonth.toLocaleString("default", { month: "long", year: "numeric" })}</span>
+        <button
+          onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
+          className="w-8 h-8 border rounded-md dark:border-gray-700"
+        >›</button>
+      </div>
+
+      {/* Legend */}
+      <div className="flex gap-4 mb-3 text-xs text-gray-500">
+        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-600" /> High priority</span>
+        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-600" /> Medium priority</span>
+        <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-600" /> Low priority</span>
+      </div>
+
+      <div className="grid grid-cols-7 border rounded-lg overflow-hidden dark:border-gray-700">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+          <div key={d} className="text-xs text-center py-2 bg-gray-50 dark:bg-gray-800 text-gray-500">{d}</div>
         ))}
-      </div>
 
-      {/* Calendar Day Grid Blocks */}
-      <div className="grid grid-cols-7 gap-1">
-        {calendarCells.map((day, idx) => {
-          const isToday =
-            day === new Date().getDate() &&
-            month === new Date().getMonth() &&
-            year === new Date().getFullYear();
+        {/* Leading blanks before day 1 */}
+        {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+          <div key={`blank-${i}`} className="min-h-[78px] border-t border-l bg-gray-50 dark:bg-gray-800 dark:border-gray-700" />
+        ))}
+
+        {cells.map(({ day, dateKey }) => {
+          const dayTodos = todosByDate[dateKey] ?? [];
+          const isToday = dateKey === todayKey;
 
           return (
             <div
-              key={idx}
-              className={`min-h-[55px] p-1 border border-slate-100 rounded-lg flex flex-col justify-between transition-all
-                ${day ? "bg-white" : "bg-slate-50/50 border-none"}
-                ${isToday ? "ring-1 ring-cixio-blue bg-cixio-light/40" : ""}
-              `}
+              key={dateKey}
+              className={`min-h-[78px] border-t border-l p-1 dark:border-gray-700 ${isToday ? "bg-purple-50 dark:bg-purple-900/20" : ""}`}
             >
-              {day && (
-                <>
-                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded-md w-fit ${
-                    isToday ? "bg-cixio-blue text-white" : "text-cixio-dark"
-                  }`}>
-                    {day}
-                  </span>
-                  
-                  {/* Subtle data indicator indicators */}
-                  <div className="w-full space-y-0.5 mt-1 overflow-hidden">
-                    {initialEvents.some(e => new Date(e.date).getDate() === day && new Date(e.date).getMonth() === month) && (
-                      <div className="w-full h-1 bg-cixio-blue rounded-full" title="Scheduled Event" />
-                    )}
-                    {initialTodos.some(t => new Date(t.dueDate).getDate() === day && new Date(t.dueDate).getMonth() === month) && (
-                      <div className="w-full h-1 bg-amber-500 rounded-full" title="Todo Deadline" />
-                    )}
-                  </div>
-                </>
+              <span className="text-xs text-gray-500">{day}</span>
+
+              {dayTodos.slice(0, 2).map((task) => (
+                <button
+                  key={task.id}
+                  onClick={() => goToTodo(task)}
+                  className={`block w-full text-left text-[10px] rounded px-1 py-0.5 mt-0.5 truncate ${PRIORITY_COLORS[task.priority]}`}
+                  title={`${task.title} — due ${task.dueDate}`}
+                >
+                  <span className="font-medium">{task.title}</span>
+                  <span className="block text-[9px] text-gray-400 mt-0.5">Due {new Date(task.dueDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                </button>
+              ))}
+
+              {dayTodos.length > 2 && (
+                <p className="text-[10px] text-gray-400 mt-0.5">+{dayTodos.length - 2} more</p>
               )}
             </div>
           );
         })}
       </div>
-    </div>
+
+      {tasks && tasks.filter((t) => t.dueDate).length === 0 && (
+        <div className="mt-4 border border-dashed rounded-xl p-6 text-center text-sm text-gray-400 dark:border-gray-700">
+          No tasks have due dates yet — add one from the Todos page and it'll show up here automatically
+        </div>
+      )}
+    </main>
   );
 }

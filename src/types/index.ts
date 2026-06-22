@@ -6,6 +6,7 @@ export interface User {
   full_name: string;
   phone: string | null;
   avatar_url: string | null;
+  role?: string;
   is_admin: boolean;
   created_at: string;
 }
@@ -59,3 +60,16 @@ export interface NotificationJob {
   retrying: number;
   completed: boolean;
 }
+
+// Chat API types
+export type SendMessageRequest = {
+  content: string;
+  use_rag: boolean;
+  thinking_mode: boolean;
+};
+
+// The three possible shapes of an SSE data event from the spec
+export type SourceEvent = { sources: { filename: string; text: string }[] };
+export type ThinkingEvent = { thinking: string };
+export type DeltaEvent = { delta: string };
+export type StreamEvent = SourceEvent | ThinkingEvent | DeltaEvent;

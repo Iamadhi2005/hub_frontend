@@ -45,12 +45,12 @@ api.interceptors.response.use(
         } catch {
           // Refresh failed — clear tokens and redirect to login
           useAuthStore.getState().logout();
-          if (typeof window !== "undefined") window.location.href = "/login";
+          if (typeof window !== "undefined") window.location.href = "/auth/login";
         }
       } else {
         // No refresh token at all — send to login
         useAuthStore.getState().logout();
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) window.location.href = "/login";
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth/login")) window.location.href = "/auth/login";
       }
     }
     return Promise.reject(error);

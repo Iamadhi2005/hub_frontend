@@ -6,13 +6,14 @@ import { Task } from "./types";
 
 export interface Filters {
   search: string;
-  status: "all" | "pending" | "completed";
+  status: "all" | "todo" | "in_progress" | "done";
   priority: "all" | "low" | "medium" | "high";
 }
 
 interface TaskFiltersProps {
   filters: Filters;
   onChange: (updatedFilters: Filters) => void;
+  taskCount: number;
 }
 
 export function applyFilters(tasks: Task[], filters: Filters): Task[] {
@@ -24,10 +25,7 @@ export function applyFilters(tasks: Task[], filters: Filters): Task[] {
         .includes(filters.search.toLowerCase());
 
     const matchesStatus =
-      filters.status === "all" ||
-      (filters.status === "completed"
-        ? task.completed
-        : !task.completed);
+      filters.status === "all" || task.status === filters.status;
 
     const matchesPriority =
       filters.priority === "all" ||
@@ -44,6 +42,7 @@ export function applyFilters(tasks: Task[], filters: Filters): Task[] {
 export default function TaskFilters({
   filters,
   onChange,
+  taskCount,
 }: TaskFiltersProps) {
   return (
     <div className="rounded-xl border border-cixio-light bg-white dark:bg-gray-900 dark:border-gray-700 p-4 shadow-sm space-y-3">
@@ -66,7 +65,6 @@ export default function TaskFilters({
         />
       </div>
 
-      {/* Filters Row */}
       <div className="flex flex-wrap items-center gap-3 pt-1 text-sm">
 
         <div className="flex items-center gap-1.5 text-cixio-dark font-medium text-xs uppercase tracking-wider">
@@ -75,6 +73,10 @@ export default function TaskFilters({
             className="text-cixio-blue"
           />
           <span>Filters</span>
+        </div>
+
+        <div className="ml-auto text-xs text-gray-500">
+          {taskCount} tasks
         </div>
 
         {/* Status Filter */}
@@ -94,12 +96,16 @@ export default function TaskFilters({
               All Status
             </option>
 
-            <option value="pending">
-              Pending
+            <option value="todo">
+              To do
             </option>
 
-            <option value="completed">
-              Completed
+            <option value="in_progress">
+              In progress
+            </option>
+
+            <option value="done">
+              Done
             </option>
           </select>
         </div>

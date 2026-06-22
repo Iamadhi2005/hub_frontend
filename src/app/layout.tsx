@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
 import NavBar from "@/components/NavBar";
-import { ThemeProvider } from "next-themes";
 import { TasksProvider } from "@/store/tasksContext";
 
 export const metadata: Metadata = {
@@ -20,14 +19,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // on <html> before React hydrates, which would otherwise cause a mismatch warning
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-cixio-bg dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TasksProvider>
-          <Providers>
-            <NavBar />
-            <div className="pt-14">{children}</div>
-          </Providers>
+            <Providers>
+              <NavBar />
+              <div className="pt-14">{children}</div>
+            </Providers>
           </TasksProvider>
-        </ThemeProvider>
       </body>
     </html>
   );
