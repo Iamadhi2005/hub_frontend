@@ -16,13 +16,15 @@ export async function POST(req: NextRequest) {
 
       const interval = setInterval(() => {
         if (i >= words.length) {
-          controller.enqueue(encoder.encode('event: done\n\n'));
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
           clearInterval(interval);
           return;
         }
 
-        const chunk = `data: ${words[i]} \n\n`;
+        // Send each word as a DeltaEvent JSON string
+        const payload = JSON.stringify({ delta: words[i] + " " });
+        const chunk = `data: ${payload}\n\n`;
         controller.enqueue(encoder.encode(chunk));
         i += 1;
       }, 40);

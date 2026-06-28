@@ -8,9 +8,43 @@ import { PRIORITY_COLORS } from "@/lib/priorityColors";
 import { Task } from "@/components/todos/types";
 
 export default function CalendarGrid() {
-  const { tasks } = useTasks();
+  const { tasks, loading, error } = useTasks();
   const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 5, 1)); // June 2026
+
+  if (loading) {
+    return (
+      <main className="p-6 max-w-5xl mx-auto animate-pulse">
+        <div className="mb-4">
+          <div className="h-6 w-32 bg-gray-200 dark:bg-gray-800 rounded-md mb-2" />
+          <div className="h-4 w-64 bg-gray-200 dark:bg-gray-800 rounded-md" />
+        </div>
+        <div className="flex gap-3 mb-4">
+          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-800 rounded-md" />
+        </div>
+        <div className="grid grid-cols-7 border rounded-lg overflow-hidden dark:border-gray-700">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div key={d} className="text-xs text-center py-2 bg-gray-50 dark:bg-gray-800 text-gray-500">{d}</div>
+          ))}
+          {Array.from({ length: 35 }).map((_, i) => (
+            <div key={i} className="min-h-[78px] border-t border-l p-1 dark:border-gray-700 bg-white dark:bg-gray-900">
+              <div className="h-3 w-4 bg-gray-150 dark:bg-gray-800 rounded mb-1" />
+              <div className="h-4 w-full bg-gray-100 dark:bg-gray-850 rounded" />
+            </div>
+          ))}
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="p-6 max-w-5xl mx-auto flex flex-col items-center justify-center text-center">
+        <p className="text-red-500 font-semibold mb-2">Error loading calendar events</p>
+        <p className="text-sm text-gray-500">{error}</p>
+      </main>
+    );
+  }
 
   // This is the ENTIRE "sync" mechanism — group whatever tasks exist by due date.
   // No copying, no separate calendar_events table needed for this feature.

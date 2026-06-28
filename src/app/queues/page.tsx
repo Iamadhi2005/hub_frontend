@@ -3,6 +3,18 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
 const NOTIFY_URL = process.env.NEXT_PUBLIC_NOTIFY_URL ?? "http://localhost:8001";
+export type Priority = "low" | "medium" | "high";
+
+export type Todo = {
+  id: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;   // ISO datetime string, e.g. "2026-06-25T17:00:00Z"
+  priority: Priority;
+  completed: boolean;
+  reminder_time: string | null;
+  created_at: string;
+};
 
 // ── types ──────────────────────────────────────────────────────────────────
 

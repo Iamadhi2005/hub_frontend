@@ -17,6 +17,8 @@ export default function StreamingMessage({ sessionId, content, useRag, thinkingM
   const [answer, setAnswer] = useState("");
   const controllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef(true);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -30,7 +32,7 @@ export default function StreamingMessage({ sessionId, content, useRag, thinkingM
       isMountedRef.current = false;
       controllerRef.current?.abort();
     };
-  }, [sessionId, content, useRag, thinkingMode, onDone]);
+  }, [sessionId, content, useRag, thinkingMode]);
 
   async function streamViaFetch() {
     const token = localStorage.getItem("access_token");
@@ -95,7 +97,7 @@ export default function StreamingMessage({ sessionId, content, useRag, thinkingM
           const raw = line.slice(6).trim();
 
           if (raw === "[DONE]") {
-            if (isMountedRef.current) onDone();
+            if (isMountedRef.current) onDoneRef.current();
             return;
           }
 
@@ -117,7 +119,7 @@ export default function StreamingMessage({ sessionId, content, useRag, thinkingM
         console.error("Stream error:", error);
       }
     } finally {
-      if (isMountedRef.current) onDone();
+      if (isMountedRef.current) onDoneRef.current();
     }
   }
 

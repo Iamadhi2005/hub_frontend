@@ -15,9 +15,9 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: null,
-      accessToken: null,
-      refreshToken: null,
+      user: { id: "mock-id", email: "dev@tkmce.ac.in", full_name: "Developer Mode", role: "user" } as any,
+      accessToken: "mock-token",
+      refreshToken: "mock-token",
       setAuth: (user, accessToken, refreshToken) => {
         if (typeof window !== "undefined") {
           localStorage.setItem("access_token", accessToken);

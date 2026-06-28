@@ -39,14 +39,15 @@ function formatDate(iso: string) {
 }
 
 function fileIcon(type: string) {
-  if (type.startsWith("image/"))        return "🖼️";
-  if (type === "application/pdf")       return "📄";
-  if (type.includes("spreadsheet") || type.includes("excel") || type.includes("csv")) return "📊";
-  if (type.includes("word") || type.includes("document")) return "📝";
-  if (type.includes("zip") || type.includes("compressed")) return "🗜️";
-  if (type.startsWith("text/"))         return "📃";
-  if (type.startsWith("video/"))        return "🎬";
-  if (type.startsWith("audio/"))        return "🎵";
+  const t = type.toLowerCase();
+  if (t.startsWith("image/") || t === "image")        return "🖼️";
+  if (t === "application/pdf" || t === "pdf")       return "📄";
+  if (t.includes("spreadsheet") || t.includes("excel") || t.includes("csv") || t === "csv") return "📊";
+  if (t.includes("word") || t.includes("document") || t === "docx") return "📝";
+  if (t.includes("zip") || t.includes("compressed")) return "🗜️";
+  if (t.startsWith("text/"))         return "📃";
+  if (t.startsWith("video/"))        return "🎬";
+  if (t.startsWith("audio/"))        return "🎵";
   return "📁";
 }
 
@@ -56,8 +57,16 @@ function useDocs(initialData?: Doc[]) {
   return useQuery<Doc[]>({
     queryKey: ["documents"],
     queryFn: async () => {
-      const res = await api.get<Doc[]>("/documents");
-      return res.data;
+      const res = await api.get<any[]>("/documents");
+      return res.data.map((item) => ({
+        id: item.id,
+        name: item.name ?? item.filename ?? "Untitled",
+        size: item.sizeBytes ?? item.file_size ?? 0,
+        type: item.type ?? item.file_type ?? "application/octet-stream",
+        url: item.url ?? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/documents/${item.id}/download`,
+        created_at: item.uploadedAt ?? item.created_at ?? new Date().toISOString(),
+        updated_at: item.uploadedAt ?? item.created_at ?? new Date().toISOString(),
+      }));
     },
     initialData,
   });

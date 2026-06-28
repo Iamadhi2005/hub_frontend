@@ -14,7 +14,7 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 export default function TodosPage() {
-  const { tasks, createTask, updateTask, deleteTask, toggleSubtask } = useTasks();
+  const { tasks, loading, error, createTask, updateTask, deleteTask, toggleSubtask } = useTasks();
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -40,18 +40,26 @@ export default function TodosPage() {
     setEditingTask(null);
   }
 
-  function handleSave(data: TaskFormData) {
-    if (editingTask) {
-      updateTask(editingTask.id, data);
-    } else {
-      createTask(data);
+  async function handleSave(data: TaskFormData) {
+    try {
+      if (editingTask) {
+        await updateTask(editingTask.id, data);
+      } else {
+        await createTask(data);
+      }
+      closeModal();
+    } catch (err) {
+      console.error("Error saving task:", err);
     }
-    closeModal();
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (!confirm("Delete this task?")) return;
-    deleteTask(id);
+    try {
+      await deleteTask(id);
+    } catch (err) {
+      console.error("Error deleting task:", err);
+    }
   }
 
   function handleEdit(task: Task) {
@@ -59,12 +67,20 @@ export default function TodosPage() {
     setModalOpen(true);
   }
 
-  function handleStatusChange(id: string, status: Task["status"]) {
-    updateTask(id, { status });
+  async function handleStatusChange(id: string, status: Task["status"]) {
+    try {
+      await updateTask(id, { status });
+    } catch (err) {
+      console.error("Error changing status:", err);
+    }
   }
 
-  function handleToggleSubtask(taskId: string, subtaskId: string) {
-    toggleSubtask(taskId, subtaskId);
+  async function handleToggleSubtask(taskId: string, subtaskId: string) {
+    try {
+      await toggleSubtask(taskId, subtaskId);
+    } catch (err) {
+      console.error("Error toggling subtask:", err);
+    }
   }
 
   const grouped = {
@@ -72,6 +88,50 @@ export default function TodosPage() {
     in_progress: visibleTasks.filter((t) => t.status === "in_progress"),
     done: visibleTasks.filter((t) => t.status === "done"),
   };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
+        <div className="max-w-6xl mx-auto animate-pulse">
+          <div className="flex items-center justify-between mb-8">
+            <div className="space-y-2">
+              <div className="h-6 w-32 bg-gray-200 dark:bg-gray-800 rounded-md" />
+              <div className="h-4 w-48 bg-gray-200 dark:bg-gray-800 rounded-md" />
+            </div>
+            <div className="h-10 w-28 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+          </div>
+
+          <div className="grid grid-cols-3 gap-6">
+            {[1, 2, 3].map((col) => (
+              <div key={col} className="space-y-4">
+                <div className="h-5 w-24 bg-gray-200 dark:bg-gray-800 rounded-md mb-2" />
+                {[1, 2].map((card) => (
+                  <div key={card} className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-xl p-4 space-y-3">
+                    <div className="flex gap-2">
+                      <div className="h-4 w-12 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                      <div className="h-4 w-16 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                    </div>
+                    <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-800 rounded-md" />
+                    <div className="h-4 w-full bg-gray-200 dark:bg-gray-800 rounded-md" />
+                    <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-800 rounded-md" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6 flex flex-col items-center justify-center text-center">
+        <p className="text-red-500 font-semibold mb-2">Error loading tasks</p>
+        <p className="text-sm text-gray-500 max-w-md">{error}</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">

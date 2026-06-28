@@ -30,8 +30,14 @@ export default function DocsWidget() {
   const { data: docs = [], isLoading, isError } = useQuery<DashboardDocument[]>({
     queryKey: ["dashboard-docs"],
     queryFn: async () => {
-      const res = await api.get<DashboardDocument[]>("/documents", { params: { limit: 4 } });
-      return res.data;
+      const res = await api.get<any[]>("/documents", { params: { limit: 4 } });
+      return res.data.map((item) => ({
+        id: item.id,
+        filename: item.name ?? item.filename ?? "Untitled",
+        file_size: item.sizeBytes ?? item.file_size ?? 0,
+        file_type: item.type ?? item.file_type ?? "application/octet-stream",
+        updated_at: item.uploadedAt ?? item.created_at ?? new Date().toISOString(),
+      }));
     },
     staleTime: 1000 * 60 * 2,
   });

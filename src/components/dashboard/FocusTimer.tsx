@@ -4,6 +4,7 @@
 // "use client" required — uses useState and setInterval.
 
 import { useState, useEffect, useRef } from "react";
+import { logFocusSession } from "@/lib/focusStore";
 
 // The three modes and their durations in seconds
 const MODES = {
@@ -32,7 +33,13 @@ export default function FocusTimer() {
             // Timer finished
             clearInterval(intervalRef.current!);
             setRunning(false);
-            if (mode === "work") setSessions((s) => s + 1);
+            if (mode === "work") {
+              setSessions((s) => s + 1);
+              logFocusSession(25);
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(new Event("focus-session-completed"));
+              }
+            }
             return 0;
           }
           return prev - 1;

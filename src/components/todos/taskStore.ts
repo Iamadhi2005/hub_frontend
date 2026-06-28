@@ -1,110 +1,175 @@
 "use client";
-// taskStore.ts
-// A simple in-memory task store with localStorage persistence.
-// This replaces a real API for now — swap out the functions below
-// with fetch() calls when your FastAPI backend is ready.
 
-import { Task, TaskFormData } from "./types";
+import api from "@/lib/api";
+import { Task, TaskFormData, Subtask } from "./types";
 
-const SEED_TASKS: Task[] = [
-  {
-    id: "1",
-    title: "Review Q3 architecture document",
-    description: "Read through the SmartHub 2.0 architecture PDF and leave comments.",
-    priority: "high",
-    status: "todo",
-    dueDate: "2026-06-15",
-    tags: ["docs", "review"],
-    subtasks: [
-      { id: "1a", title: "Read section 1 — Auth", done: true },
-      { id: "1b", title: "Read section 2 — AI", done: false },
-      { id: "1c", title: "Leave inline comments", done: false },
-    ],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    title: "Build dashboard widgets",
-    description: "Implement all 9 dashboard components in Next.js.",
-    priority: "high",
-    status: "in_progress",
-    dueDate: "2026-06-14",
-    tags: ["frontend", "next.js"],
-    subtasks: [
-      { id: "2a", title: "StatsBar", done: true },
-      { id: "2b", title: "TasksWidget", done: true },
-      { id: "2c", title: "FocusTimer", done: true },
-      { id: "2d", title: "AI Chat widget", done: false },
-    ],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    title: "Set up Tailwind CSS config",
-    description: "Configure tailwind.config.ts with custom colours and fonts.",
-    priority: "medium",
-    status: "done",
-    dueDate: "2026-06-10",
-    tags: ["setup"],
-    subtasks: [],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "4",
-    title: "Write API integration tests",
-    description: "Cover /api/tasks, /api/notes, and /api/ai/chat endpoints.",
-    priority: "low",
-    status: "todo",
-    dueDate: "2026-06-20",
-    tags: ["testing", "backend"],
-    subtasks: [],
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const STORAGE_KEY = "smarthub_tasks";
-
-export function loadTasks(): Task[] {
-  if (typeof window === "undefined") return SEED_TASKS;
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Task[]) : SEED_TASKS;
-  } catch {
-    return SEED_TASKS;
+// Helper to serialize TaskFormData to backend Todo format
+function toBackend(data: TaskFormData) {
+  // Append tags and status to description so they persist without migrations
+  let description = data.description || "";
+  if (data.tags && data.tags.length > 0) {
+    description += `\nTags: ${data.tags.join(",")}`;
   }
-}
+  description += `\nStatus: ${data.status}`;
 
-export function saveTasks(tasks: Task[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
+  const completed = data.status === "done";
 
-export function createTask(tasks: Task[], data: TaskFormData): Task[] {
-  const newTask: Task = {
-    ...data,
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString(),
+  return {
+    title: data.title,
+    description: description,
+    priority: data.priority,
+    completed: completed,
+    due_date: data.dueDate ? new Date(data.dueDate).toISOString() : null,
   };
-  return [newTask, ...tasks];
 }
 
-export function updateTask(tasks: Task[], id: string, data: Partial<Task>): Task[] {
-  return tasks.map((t) => (t.id === id ? { ...t, ...data } : t));
+// Helper to parse backend Todo to frontend Task format
+function fromBackend(todo: any): Task {
+  let description = todo.description || "";
+  let tags: string[] = [];
+  let status: "todo" | "in_progress" | "done" = "todo";
+
+  // Parse tags
+  const tagIndex = description.lastIndexOf("\nTags: ");
+  if (tagIndex !== -1) {
+    const tagsPart = description.substring(tagIndex + 7);
+    const newlineIndex = tagsPart.indexOf("\n");
+    const tagsStr = newlineIndex !== -1 ? tagsPart.substring(0, newlineIndex) : tagsPart;
+    tags = tagsStr.split(",").map((t: string) => t.trim()).filter(Boolean);
+    description = description.substring(0, tagIndex) + (newlineIndex !== -1 ? tagsPart.substring(newlineIndex) : "");
+  }
+
+  // Parse status
+  const statusIndex = description.lastIndexOf("\nStatus: ");
+  if (statusIndex !== -1) {
+    const statusPart = description.substring(statusIndex + 9).trim();
+    if (statusPart === "in_progress" || statusPart === "todo" || statusPart === "done") {
+      status = statusPart as any;
+    }
+    description = description.substring(0, statusIndex);
+  } else if (todo.completed) {
+    status = "done";
+  }
+
+  // Parse subtasks
+  const subtasks: Subtask[] = (todo.subtasks || []).map((s: any) => ({
+    id: String(s.id),
+    title: s.title,
+    done: Boolean(s.completed),
+  }));
+
+  // Parse dueDate
+  let dueDate = "";
+  if (todo.due_date) {
+    dueDate = todo.due_date.split("T")[0];
+  }
+
+  return {
+    id: String(todo.id),
+    title: todo.title,
+    description: description,
+    priority: todo.priority,
+    status: status,
+    dueDate: dueDate,
+    tags: tags,
+    subtasks: subtasks,
+    createdAt: todo.created_at || new Date().toISOString(),
+  };
 }
 
-export function deleteTask(tasks: Task[], id: string): Task[] {
-  return tasks.filter((t) => t.id !== id);
+export async function loadTasks(): Promise<Task[]> {
+  const res = await api.get("/todos/");
+  return res.data.map(fromBackend);
 }
 
-export function toggleSubtask(tasks: Task[], taskId: string, subtaskId: string): Task[] {
-  return tasks.map((t) => {
-    if (t.id !== taskId) return t;
-    return {
-      ...t,
-      subtasks: t.subtasks.map((s) =>
-        s.id === subtaskId ? { ...s, done: !s.done } : s
-      ),
-    };
-  });
+export async function createTask(data: TaskFormData): Promise<Task> {
+  const payload = toBackend(data);
+  const res = await api.post("/todos/", payload);
+  const createdTodo = res.data;
+
+  // Save subtasks if any
+  if (data.subtasks && data.subtasks.length > 0) {
+    for (const sub of data.subtasks) {
+      await api.post(`/todos/${createdTodo.id}/subtasks`, { title: sub.title });
+    }
+  }
+
+  // Reload the created task with its subtasks
+  const reloadRes = await api.get(`/todos/`);
+  const finalTodo = reloadRes.data.find((t: any) => String(t.id) === createdTodo.id);
+  return fromBackend(finalTodo || createdTodo);
+}
+
+export async function updateTask(id: string, data: Partial<Task>): Promise<Task> {
+  // If status is changed, update the completion status endpoint
+  if (data.status !== undefined) {
+    const completed = data.status === "done";
+    await api.put(`/todos/${id}/complete`, { completed });
+  }
+
+  const payload: any = {};
+  if (data.title !== undefined) payload.title = data.title;
+
+  if (data.description !== undefined || data.tags !== undefined || data.status !== undefined) {
+    let finalDescription = data.description !== undefined ? data.description : "";
+    const finalTags = data.tags || [];
+    const finalStatus = data.status || "todo";
+
+    if (finalTags.length > 0) {
+      finalDescription += `\nTags: ${finalTags.join(",")}`;
+    }
+    finalDescription += `\nStatus: ${finalStatus}`;
+    payload.description = finalDescription;
+  }
+
+  if (data.priority !== undefined) payload.priority = data.priority;
+  if (data.dueDate !== undefined) {
+    payload.due_date = data.dueDate ? new Date(data.dueDate).toISOString() : null;
+  }
+
+  let updatedTodoRes = null;
+  if (Object.keys(payload).length > 0) {
+    updatedTodoRes = await api.put(`/todos/${id}`, payload);
+  }
+
+  // Handle subtasks additions and deletions
+  if (data.subtasks !== undefined) {
+    const currentSubsRes = await api.get(`/todos/${id}/subtasks`);
+    const currentSubs = currentSubsRes.data;
+
+    // Delete removed ones
+    const toDelete = currentSubs.filter(
+      (cs: any) => !data.subtasks?.some((ds) => ds.id === String(cs.id))
+    );
+    for (const sub of toDelete) {
+      await api.delete(`/todos/${id}/subtasks/${sub.id}`);
+    }
+
+    // Add new ones
+    const toAdd = data.subtasks.filter(
+      (ds) => !currentSubs.some((cs: any) => String(cs.id) === ds.id)
+    );
+    for (const sub of toAdd) {
+      await api.post(`/todos/${id}/subtasks`, { title: sub.title });
+    }
+  }
+
+  const reloadRes = await api.get(`/todos/`);
+  const finalTodo = reloadRes.data.find((t: any) => String(t.id) === id);
+  return fromBackend(finalTodo);
+}
+
+export async function deleteTask(id: string): Promise<void> {
+  await api.delete(`/todos/${id}`);
+}
+
+export async function toggleSubtask(taskId: string, subtaskId: string): Promise<void> {
+  const currentSubsRes = await api.get(`/todos/${taskId}/subtasks`);
+  const subtask = currentSubsRes.data.find((s: any) => String(s.id) === subtaskId);
+  if (subtask) {
+    await api.put(`/todos/${taskId}/subtasks/${subtaskId}`, {
+      title: subtask.title,
+      completed: !subtask.completed,
+    });
+  }
 }

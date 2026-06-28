@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSessions, useMessages } from "@/hooks/useChat";
 import NewChatButton from "@/components/chat/newchatbutton";
 import ChatInput from "@/components/chat/ChatInput";
 import StreamingMessage from "@/components/chat/StreamingMessage";
 import AIMessage from "@/components/chat/AIMessage";
 
-export default function ChatSessionPage() {
+function ChatSessionPageContent() {
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const { data: sessions, isLoading: sessionsLoading } = useSessions();
   const sessionId = sessions?.[0]?.id ?? "";
   const { data: messages, isLoading: messagesLoading } = useMessages(sessionId || null);
@@ -15,6 +19,8 @@ export default function ChatSessionPage() {
   const [streaming, setStreaming] = useState<{ content: string; useRag: boolean; thinkingMode: boolean } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const queryPrompt = searchParams.get("q");
 
   // Scroll to bottom when new messages arrive or streaming updates
   useEffect(() => {
@@ -26,6 +32,15 @@ export default function ChatSessionPage() {
     const timer = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timer);
   }, [messages, streaming]);
+
+  // Handle auto-submitting the query parameter if it exists and history is empty
+  useEffect(() => {
+    if (queryPrompt && !isLoading && messages && messages.length === 0 && !streaming) {
+      handleSend(queryPrompt, false, false);
+      // Remove query parameter from URL so it doesn't trigger again on reload
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [queryPrompt, isLoading, messages, streaming]);
 
   function handleSend(text: string, useRag: boolean, thinkingMode: boolean) {
     setStreaming({ content: text, useRag, thinkingMode });
@@ -109,7 +124,10 @@ export default function ChatSessionPage() {
               content={streaming.content}
               useRag={streaming.useRag}
               thinkingMode={streaming.thinkingMode}
-              onDone={() => setStreaming(null)}
+              onDone={() => {
+                setStreaming(null);
+                queryClient.invalidateQueries({ queryKey: ["chat-messages", sessionId] });
+              }}
             />
           </div>
         )}
@@ -121,5 +139,17 @@ export default function ChatSessionPage() {
       {/* Input Area */}
       <ChatInput onSend={handleSend} disabled={!!streaming} />
     </div>
+  );
+}
+
+export default function ChatSessionPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-full">
+        <p className="text-sm text-gray-400">Loading chat...</p>
+      </div>
+    }>
+      <ChatSessionPageContent />
+    </Suspense>
   );
 }
